@@ -11,6 +11,7 @@ const answercollections = require("./models/answers.js");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const categoryRoutes = require("./routes/category");
+const { SubmitAnswers } = require("./controllers/user.js");
 
 //middleware
 app.use(bodyParser.json());
@@ -34,16 +35,7 @@ app.use("/api", userRoutes);
 app.use("/api", categoryRoutes);
 
 //answer post
-app.post("/api/post/answers", (req, res) => {
-  const dbMessage = req.body;
-  answercollections.create(dbMessage, (err, data) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.status(201).send(data);
-    }
-  });
-});
+app.post("/api/post/answers", SubmitAnswers);
 
 //port
 const port = process.env.PORT || 8000;

@@ -1,5 +1,5 @@
 const User = require("../models/user");
-// const Order=require("../models/order");
+const answercollections = require("../models/answers");
 
 exports.getUserById = (req, res, next, id) => {
   User.findById(id).exec((err, user) => {
@@ -40,4 +40,15 @@ exports.UpdateUser = (req, res) => {
       res.json(user);
     }
   );
+};
+
+exports.SubmitAnswers = (req, res) => {
+  const dbMessage = req.body;
+  answercollections.create(dbMessage, (err, data) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.status(201).send(data);
+    }
+  });
 };
