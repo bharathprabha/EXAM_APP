@@ -1,5 +1,5 @@
 const User = require("../models/user");
-// const Order=require("../models/order");
+const answercollections = require("../models/answers");
 
 exports.getUserById = (req, res, next, id) => {
   User.findById(id).exec((err, user) => {
@@ -40,4 +40,40 @@ exports.UpdateUser = (req, res) => {
       res.json(user);
     }
   );
+};
+
+exports.SubmitAnswers = (req, res) => {
+  const dbMessage = req.body;
+  answercollections.create(dbMessage, (err, data) => {
+    if (err) {
+      res.status(500).json(err);
+    } else {
+      res.status(201).json(data);
+    }
+  });
+};
+
+exports.SubmitedAnswers = (req, res) => {
+  const user_id = req.body.userId;
+  var arr = [];
+  answercollections.find({ std_id: user_id }).exec((err, ans) => {
+    if (err) {
+      return res.status(400).json({
+        error: "ans not found in DB",
+      });
+    }
+    console.log(ans[ans.length - 1]);
+    res.json(ans[ans.length - 1]);
+  });
+};
+
+exports.getAllUsers = (req, res) => {
+  User.find({ role: 0 }, { _id: 1, name: 1 }).exec((err, users) => {
+    if (err) {
+      return res.status(400).json({
+        error: "NO users found",
+      });
+    }
+    res.json(users);
+  });
 };
