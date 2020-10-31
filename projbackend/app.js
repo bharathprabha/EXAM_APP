@@ -11,7 +11,11 @@ const answercollections = require("./models/answers.js");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const categoryRoutes = require("./routes/category");
-const { SubmitAnswers } = require("./controllers/user.js");
+const {
+  SubmitAnswers,
+  SubmitedAnswers,
+  getAllUsers,
+} = require("./controllers/user.js");
 
 //middleware
 app.use(bodyParser.json());
@@ -33,10 +37,13 @@ mongoose
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", categoryRoutes);
+// correction ans
+app.post("/api/correction", SubmitedAnswers);
 
 //answer post
 app.post("/api/post/answers", SubmitAnswers);
-
+//get all user
+app.use("/api/users", getAllUsers);
 //port
 const port = process.env.PORT || 8000;
 
