@@ -5,9 +5,7 @@ import Base from "./Base";
 
 const Home = () => {
   return (
-    <Base title="home page" description="EXAMINATION APP">
-      <h1>questions</h1>
-    </Base>
+    <Base title="EXAMINATION APP" description="Signup with your account"></Base>
   );
 };
 

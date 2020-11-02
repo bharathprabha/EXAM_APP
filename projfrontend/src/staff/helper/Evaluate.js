@@ -23,22 +23,32 @@ const GetAnswers = ({ match }) => {
 
   return (
     <Base
-      title="category update!"
-      description="Welcome to category updation section"
+      title={userSubmission.std_name}
+      description="Award the marks the answers"
       className="container bg-warning p-4"
     >
       {console.log(answers)}
-      <form class="form-inline">
-        <div class="form-group mx-sm-3 mb-2">
-          <label class="m-4">Mark</label>
-
-          <label class="">Mark2</label>
-          <input type="text" class="form-control" id="" placeholder="" />
+      {answers.map((answer) => (
+        <div className="card mb-4">
+          <ul className="list-group">
+            <li className="list-group-item text-dark">
+              <span className="badge badge-danger mr-2 ">Question: </span>{" "}
+              {answer.qus}?
+            </li>
+            <li className="list-group-item text-dark">
+              <span className="badge badge-secondary mr-2 ">Answer:</span>{" "}
+              {answer.ans}?
+            </li>
+            <li className="list-group-item">
+              <span className="badge badge-success mr-2">Mark: </span>
+              <input type="text" className="w-100"></input>
+            </li>
+            <button type="button" class="btn btn-success btn-md">
+              SAVE
+            </button>
+          </ul>
         </div>
-        <button type="submit" class="btn btn-primary mb-2">
-          Confirm identity
-        </button>
-      </form>
+      ))}
     </Base>
   );
 };
