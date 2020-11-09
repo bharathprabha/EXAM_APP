@@ -4,7 +4,9 @@ import Base from "../core/Base";
 import { isAuthenticated } from "../auth/helper/index";
 import { getCategories } from "../admin/helper/adminapicall";
 import { API } from "../backend.js";
+import * as faceapi from "face-api.js";
 import ImageHelper from "../core/helper/ImageHelper";
+import Webcam from "react-webcam";
 
 const UserDashBoard = () => {
   const [questions, setQuestions] = useState([]);
@@ -17,6 +19,7 @@ const UserDashBoard = () => {
   const buffer = user.photo.data;
   const b64 = new Buffer(buffer).toString("base64");
   const mimeType = "image/jpeg";
+  const webcamRef = React.useRef(null);
 
   const {
     user: { name, email, role },
@@ -30,6 +33,45 @@ const UserDashBoard = () => {
       }
     });
   };
+
+  Promise.all([
+    faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
+    faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
+    faceapi.nets.ssdMobilenetv1.loadFromUri("/models"),
+  ]).then(console.log("completed"));
+
+  async function detectfade() {
+    let blob = webcamRef.current.getScreenshot();
+    let img = await faceapi.fetchImage(blob);
+    const imageString = `data:${mimeType};base64,${b64}`;
+    console.log("first");
+    const image = await faceapi.fetchImage(imageString);
+    const detections = await faceapi
+      .detectAllFaces(image)
+      .withFaceLandmarks()
+      .withFaceDescriptors();
+
+    if (!detections.length) {
+      return;
+    }
+
+    console.log("second");
+
+    const faceMatcher = new faceapi.FaceMatcher(detections);
+
+    console.log("3");
+
+    const singleResult = await faceapi
+      .detectSingleFace(img)
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+    console.log("4");
+
+    if (singleResult) {
+      const bestMatch = faceMatcher.findBestMatch(singleResult.descriptor);
+      console.log(bestMatch.toString());
+    }
+  }
 
   const onSave = (event) => {
     event.preventDefault();
@@ -60,11 +102,20 @@ const UserDashBoard = () => {
 
   return (
     <Base title=" UserDashBoard page">
-      {console.log(user.photo.data)}
+      {/* {console.log(user.photo.data)} */}
 
       {mimeType ? <img src={`data:${mimeType};base64,${b64}`} /> : ""}
       {questions.length == 0 ? <h6>hi {name} the test will start soon</h6> : ""}
-
+      <button type="button" onClick={detectfade}>
+        hello
+      </button>
+      <Webcam
+        audio={false}
+        height={720}
+        ref={webcamRef}
+        screenshotFormat="image/jpeg"
+        width={1280}
+      />
       {questions.map((question) => {
         return (
           <div className="card mb-4">
@@ -98,7 +149,7 @@ const UserDashBoard = () => {
       <button
         onClick={sendAnswer}
         type="button"
-        class="btn btn-success btn-lg btn-block"
+        className="btn btn-success btn-lg btn-block"
       >
         SUBMIT
       </button>
