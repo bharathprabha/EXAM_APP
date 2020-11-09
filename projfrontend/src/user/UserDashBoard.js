@@ -13,6 +13,7 @@ const UserDashBoard = () => {
   const [error, setError] = useState([]);
   const [answers, setAnswers] = useState([]);
   const [answer, setAnswer] = useState({});
+  const [faceDetected, setFaceDetected] = useState(false);
   const { user, token } = isAuthenticated();
   console.log(user);
   ///image from buffer
@@ -44,7 +45,6 @@ const UserDashBoard = () => {
     let blob = webcamRef.current.getScreenshot();
     let img = await faceapi.fetchImage(blob);
     const imageString = `data:${mimeType};base64,${b64}`;
-    console.log("first");
     const image = await faceapi.fetchImage(imageString);
     const detections = await faceapi
       .detectAllFaces(image)
@@ -55,21 +55,18 @@ const UserDashBoard = () => {
       return;
     }
 
-    console.log("second");
-
     const faceMatcher = new faceapi.FaceMatcher(detections);
-
-    console.log("3");
 
     const singleResult = await faceapi
       .detectSingleFace(img)
       .withFaceLandmarks()
       .withFaceDescriptor();
-    console.log("4");
 
     if (singleResult) {
       const bestMatch = faceMatcher.findBestMatch(singleResult.descriptor);
-      console.log(bestMatch.toString());
+      if (bestMatch._distance > 0.4) {
+        setFaceDetected(true);
+      }
     }
   }
 
@@ -102,20 +99,34 @@ const UserDashBoard = () => {
 
   return (
     <Base title=" UserDashBoard page">
-      {/* {console.log(user.photo.data)} */}
+      <div className="faceDetections">
+        {mimeType ? (
+          <img
+            height="400"
+            width="400"
+            className="faceDetections-img"
+            src={`data:${mimeType};base64,${b64}`}
+          />
+        ) : (
+          ""
+        )}
 
-      {mimeType ? <img src={`data:${mimeType};base64,${b64}`} /> : ""}
+        <Webcam
+          className="webcam"
+          audio={false}
+          height={400}
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+          width={400}
+        />
+
+        <button type="button" onClick={detectfade}>
+          hello
+        </button>
+      </div>
+      {faceDetected ? <h1>face detected</h1> : <h1>Face not detected</h1>}
       {questions.length == 0 ? <h6>hi {name} the test will start soon</h6> : ""}
-      <button type="button" onClick={detectfade}>
-        hello
-      </button>
-      <Webcam
-        audio={false}
-        height={720}
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-        width={1280}
-      />
+
       {questions.map((question) => {
         return (
           <div className="card mb-4">

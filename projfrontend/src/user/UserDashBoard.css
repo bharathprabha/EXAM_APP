@@ -1,0 +1,8 @@
+.faceDetections {
+  border: solid 5px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.webcam {
+}
