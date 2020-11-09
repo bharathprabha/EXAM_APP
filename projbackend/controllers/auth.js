@@ -2,7 +2,8 @@ const User = require("../models/user");
 const { check, validationResult } = require("express-validator");
 var jwt = require("jsonwebtoken");
 var expressJwt = require("express-jwt");
-
+const fs = require("fs");
+const formidable = require("formidable");
 exports.signout = (req, res) => {
   res.clearCookie("token");
   res.json({
@@ -34,34 +35,75 @@ exports.signin = (req, res) => {
     //put token in cookie
     res.cookie("token", token, { expire: new Date() + 9999 });
     //send res to front end
-    const { _id, name, email, role } = user;
-    return res.json({ token, user: { _id, name, email, role } });
+    const { _id, name, email, role, photo } = user;
+    return res.json({ token, user: { _id, name, email, role, photo } });
   });
 };
 
 exports.signup = (req, res) => {
-  const errors = validationResult(req);
+  // const errors = validationResult(req);
 
-  if (!errors.isEmpty()) {
-    return res.status(422).json({
-      error: errors.array()[0].msg,
-    });
-  }
+  // if (!errors.isEmpty()) {
+  //   return res.status(422).json({
+  //     error: errors.array()[0].msg,
+  //   });
+  // }
 
-  const user = new User(req.body);
-  user.save((err, user) => {
+  // const user = new User(req.body);
+  // user.save((err, user) => {
+  //   if (err) {
+  //     return res.status(400).json({
+  //       err: "NOT ABLE TO SAVE USER IN DB",
+  //     });
+  //   }
+  //   res.json({
+  //     name: user.name,
+  //     email: user.email,
+  //     id: user._id,
+  //   });
+  // });
+
+  let form = formidable.IncomingForm();
+  form.keepExtensions = true;
+  form.parse(req, (err, fields, file) => {
     if (err) {
-      return res.status(400).json({
-        err: "NOT ABLE TO SAVE USER IN DB",
+      return res.json({
+        error: "problem with images",
       });
     }
-    res.json({
-      name: user.name,
-      email: user.email,
-      id: user._id,
+    //destruct the fields
+    const { name, email, password } = fields;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        error: "include all fields",
+      });
+    }
+    //todo restriction of field
+
+    let user = new User(fields);
+    //handle file here
+    if (file.photo) {
+      if (file.photo.size > 3000000) {
+        return res.status(400).json({
+          error: "file is to big",
+        });
+      }
+      user.photo.data = fs.readFileSync(file.photo.path);
+      user.photo.contentType = file.photo.type;
+    }
+    //save to db
+    user.save((err, user) => {
+      if (err) {
+        return res.json({
+          error: "saving user in db failed",
+        });
+      }
+      res.json(user);
     });
   });
 };
+
 //
 exports.isSignedIn = expressJwt({
   secret: process.env.SECRET,

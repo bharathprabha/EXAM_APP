@@ -4,6 +4,7 @@ import Base from "../core/Base";
 import { isAuthenticated } from "../auth/helper/index";
 import { getCategories } from "../admin/helper/adminapicall";
 import { API } from "../backend.js";
+import ImageHelper from "../core/helper/ImageHelper";
 
 const UserDashBoard = () => {
   const [questions, setQuestions] = useState([]);
@@ -11,6 +12,11 @@ const UserDashBoard = () => {
   const [answers, setAnswers] = useState([]);
   const [answer, setAnswer] = useState({});
   const { user, token } = isAuthenticated();
+  console.log(user);
+  ///image from buffer
+  const buffer = user.photo.data;
+  const b64 = new Buffer(buffer).toString("base64");
+  const mimeType = "image/jpeg";
 
   const {
     user: { name, email, role },
@@ -54,6 +60,9 @@ const UserDashBoard = () => {
 
   return (
     <Base title=" UserDashBoard page">
+      {console.log(user.photo.data)}
+
+      {mimeType ? <img src={`data:${mimeType};base64,${b64}`} /> : ""}
       {questions.length == 0 ? <h6>hi {name} the test will start soon</h6> : ""}
 
       {questions.map((question) => {
